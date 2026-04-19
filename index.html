@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ledger">
+<meta name="theme-color" content="#1a1410">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%231a1410'/%3E%3Ctext x='90' y='122' font-family='Georgia,serif' font-size='110' font-style='italic' text-anchor='middle' fill='%23d4a574'%3EL%3C/text%3E%3C/svg%3E">
+<title>Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Literata:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     LEDGER — a quiet planner for tomorrow, today, and yesterday
+     v2. Stage 1.
+     ============================================================ */
+
+:root {
+/* palette — candlelight on aged paper, in the dark */
+–ink-deep:    #0f0b08;   /* deepest shadow */
+–paper:       #1a1410;   /* main background */
+–paper-warm:  #221a14;   /* raised surfaces */
+–paper-line:  rgba(212, 165, 116, 0.08);
+–paper-edge:  rgba(212, 165, 116, 0.15);
+
+```
+--ink:         #f0e6d6;   /* primary text */
+--ink-mid:     #c9bba4;   /* secondary text */
+--ink-soft:    #8a7f6d;   /* tertiary text */
+--ink-faint:   #5a5245;   /* placeholder, hints */
+
+--ember:       #d4a574;   /* primary accent — warm gold */
+--ember-soft:  #b8895a;   /* muted accent */
+--ember-glow:  rgba(212, 165, 116, 0.12);
+
+--done:        #6b6557;   /* completed task color */
+--danger:      #c97a5a;   /* delete / destructive */
+
+--font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+--font-body:    'Literata', Georgia, 'Times New Roman', serif;
+
+--radius:      14px;
+--radius-sm:   8px;
+```
+
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+background: var(–paper);
+color: var(–ink);
+font-family: var(–font-body);
+font-size: 17px;
+line-height: 1.55;
+min-height: 100vh;
+min-height: -webkit-fill-available;
+overscroll-behavior: none;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+text-rendering: optimizeLegibility;
+}
+
+/* paper grain texture — very subtle */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+pointer-events: none;
+z-index: 0;
+background-image:
+radial-gradient(ellipse at 20% 10%, rgba(212, 165, 116, 0.05) 0%, transparent 55%),
+radial-gradient(ellipse at 85% 90%, rgba(212, 165, 116, 0.04) 0%, transparent 60%),
+url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘120’ height=‘120’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘2’ stitchTiles=‘stitch’/%3E%3CfeColorMatrix values=‘0 0 0 0 0.83  0 0 0 0 0.65  0 0 0 0 0.45  0 0 0 0.04 0’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’/%3E%3C/svg%3E”);
+}
+
+body {
+padding: max(env(safe-area-inset-top), 20px) 22px max(env(safe-area-inset-bottom), 24px);
+max-width: 560px;
+margin: 0 auto;
+position: relative;
+z-index: 1;
+}
+
+/* ============================================================
+HEADER
+============================================================ */
+header {
+padding: 12px 0 32px;
+position: relative;
+}
+
+.crest {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 20px;
+}
+
+.crest-mark {
+width: 28px;
+height: 28px;
+border-radius: 50%;
+background: radial-gradient(circle at 35% 35%, var(–ember) 0%, var(–ember-soft) 70%, transparent 100%);
+box-shadow: 0 0 18px var(–ember-glow);
+position: relative;
+}
+.crest-mark::after {
+content: ‘’;
+position: absolute;
+inset: 8px;
+border-radius: 50%;
+background: var(–paper);
+}
+
+.crest-name {
+font-family: var(–font-display);
+font-size: 13px;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–ember);
+font-weight: 500;
+}
+
+.date {
+font-family: var(–font-display);
+font-style: italic;
+font-size: 13px;
+color: var(–ink-soft);
+letter-spacing: 0.04em;
+margin-bottom: 6px;
+}
+
+h1 {
+font-family: var(–font-display);
+font-weight: 400;
+font-size: clamp(40px, 10vw, 52px);
+line-height: 1.02;
+letter-spacing: -0.025em;
+color: var(–ink);
+}
+h1 .italic {
+font-style: italic;
+color: var(–ember);
+font-weight: 500;
+}
+
+/* tab nav */
+.tabs {
+display: flex;
+gap: 0;
+margin-top: 28px;
+border-bottom: 1px solid var(–paper-line);
+position: relative;
+}
+.tabs button {
+flex: 1;
+background: none;
+border: none;
+color: var(–ink-soft);
+font-family: var(–font-body);
+font-size: 13px;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+padding: 14px 6px;
+cursor: pointer;
+position: relative;
+transition: color 0.25s ease;
+}
+.tabs button.active { color: var(–ember); }
+.tabs button.active::after {
+content: ‘’;
+position: absolute;
+bottom: -1px;
+left: 20%;
+right: 20%;
+height: 1.5px;
+background: var(–ember);
+box-shadow: 0 0 8px var(–ember-glow);
+}
+
+/* ============================================================
+MAIN
+============================================================ */
+main { padding-top: 28px; min-height: 50vh; }
+
+/* —– task list —– */
+.task-list { list-style: none; display: flex; flex-direction: column; }
+
+.task {
+display: flex;
+align-items: flex-start;
+gap: 14px;
+padding: 18px 4px;
+border-bottom: 1px solid var(–paper-line);
+cursor: pointer;
+position: relative;
+transition: background 0.25s ease, padding 0.25s ease;
+}
+.task:hover { background: var(–ember-glow); padding-left: 10px; padding-right: 10px; border-radius: var(–radius-sm); }
+.task:active { transform: scale(0.995); }
+
+.check {
+flex-shrink: 0;
+width: 24px;
+height: 24px;
+border-radius: 50%;
+border: 1.5px solid var(–ink-soft);
+margin-top: 2px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+position: relative;
+}
+.task.done .check {
+background: var(–ember);
+border-color: var(–ember);
+box-shadow: 0 0 14px var(–ember-glow);
+}
+.task.done .check::after {
+content: ‘’;
+width: 10px;
+height: 6px;
+border-left: 2px solid var(–paper);
+border-bottom: 2px solid var(–paper);
+transform: rotate(-45deg) translate(1px, -1px);
+animation: inkStroke 0.35s ease-out;
+}
+@keyframes inkStroke {
+from { opacity: 0; transform: rotate(-45deg) translate(1px, -1px) scale(0.5); }
+to   { opacity: 1; transform: rotate(-45deg) translate(1px, -1px) scale(1); }
+}
+
+.task-text {
+flex: 1;
+font-family: var(–font-body);
+font-size: 18px;
+line-height: 1.45;
+color: var(–ink);
+word-break: break-word;
+padding-top: 1px;
+}
+.task.done .task-text {
+color: var(–done);
+text-decoration: line-through;
+text-decoration-thickness: 1px;
+text-decoration-color: var(–done);
+font-style: italic;
+}
+
+.task-delete {
+opacity: 0;
+background: none;
+border: none;
+color: var(–ink-faint);
+font-size: 22px;
+cursor: pointer;
+padding: 0 8px;
+transition: opacity 0.2s, color 0.2s, transform 0.2s;
+font-family: var(–font-display);
+}
+.task:hover .task-delete, .task.show-delete .task-delete { opacity: 1; }
+.task-delete:hover { color: var(–danger); transform: scale(1.1); }
+
+/* —– add row —– */
+.add-row {
+display: flex;
+align-items: center;
+gap: 14px;
+padding: 18px 4px;
+border-bottom: 1px solid var(–paper-line);
+transition: padding 0.2s;
+}
+.add-row:focus-within { padding-left: 10px; padding-right: 10px; }
+
+.add-plus {
+flex-shrink: 0;
+width: 24px;
+height: 24px;
+border-radius: 50%;
+border: 1.5px dashed var(–ink-faint);
+display: flex;
+align-items: center;
+justify-content: center;
+color: var(–ink-faint);
+font-family: var(–font-display);
+font-size: 18px;
+line-height: 1;
+transition: all 0.25s;
+}
+.add-row:focus-within .add-plus {
+border-color: var(–ember);
+color: var(–ember);
+border-style: solid;
+}
+
+.add-input {
+flex: 1;
+background: none;
+border: none;
+font-family: var(–font-body);
+font-size: 18px;
+line-height: 1.45;
+color: var(–ink);   /* THE FIX — explicit color so iOS dark mode doesn’t override */
+caret-color: var(–ember);
+outline: none;
+padding: 2px 0;
+-webkit-text-fill-color: var(–ink);  /* extra insurance on iOS */
+}
+.add-input::placeholder {
+color: var(–ink-faint);
+font-style: italic;
+font-family: var(–font-display);
+-webkit-text-fill-color: var(–ink-faint);
+}
+
+/* —– empty states —– */
+.empty {
+padding: 56px 24px;
+text-align: center;
+font-family: var(–font-display);
+font-style: italic;
+font-size: 17px;
+line-height: 1.65;
+color: var(–ink-mid);
+}
+.empty .ornament {
+display: block;
+margin: 0 auto 18px;
+font-size: 20px;
+color: var(–ember);
+letter-spacing: 0.4em;
+}
+
+/* ============================================================
+DIARY
+============================================================ */
+.journal {
+display: flex;
+flex-direction: column;
+gap: 36px;
+}
+
+.day-group {
+display: flex;
+flex-direction: column;
+}
+
+.day-header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+padding-bottom: 10px;
+margin-bottom: 4px;
+border-bottom: 1px solid var(–paper-edge);
+}
+.day-title {
+font-family: var(–font-display);
+font-style: italic;
+font-size: 22px;
+color: var(–ink);
+font-weight: 400;
+}
+.day-meta {
+font-family: var(–font-body);
+font-size: 11px;
+color: var(–ember-soft);
+letter-spacing: 0.15em;
+text-transform: uppercase;
+}
+
+.journal-item {
+padding: 12px 0;
+border-bottom: 1px solid var(–paper-line);
+display: flex;
+gap: 12px;
+align-items: flex-start;
+font-size: 16px;
+}
+.journal-item .marker {
+flex-shrink: 0;
+width: 12px;
+height: 12px;
+border-radius: 50%;
+margin-top: 6px;
+}
+.journal-item.done-item .marker {
+background: var(–ember);
+box-shadow: 0 0 8px var(–ember-glow);
+}
+.journal-item.undone-item .marker {
+background: transparent;
+border: 1.5px solid var(–ink-faint);
+}
+.journal-item.done-item .item-text { color: var(–ink-mid); }
+.journal-item.undone-item .item-text { color: var(–ink-soft); font-style: italic; }
+
+/* ============================================================
+FOOTER
+============================================================ */
+footer {
+margin-top: 56px;
+padding: 24px 0 8px;
+border-top: 1px solid var(–paper-line);
+text-align: center;
+}
+footer .ornament {
+font-family: var(–font-display);
+color: var(–ember-soft);
+font-size: 14px;
+letter-spacing: 0.4em;
+margin-bottom: 14px;
+}
+footer .stat {
+font-family: var(–font-display);
+font-style: italic;
+font-size: 14px;
+color: var(–ink-mid);
+line-height: 1.6;
+}
+footer .stat strong {
+color: var(–ember);
+font-weight: 500;
+font-style: normal;
+}
+footer .hint {
+margin-top: 10px;
+font-size: 11px;
+color: var(–ink-faint);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+}
+
+/* ============================================================
+ENTRANCE ANIMATION
+============================================================ */
+main > *, header > * {
+animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+main > *:nth-child(1) { animation-delay: 0.05s; }
+main > *:nth-child(2) { animation-delay: 0.12s; }
+main > *:nth-child(3) { animation-delay: 0.18s; }
+main > *:nth-child(4) { animation-delay: 0.24s; }
+@keyframes rise {
+from { opacity: 0; transform: translateY(12px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+/* focus ring for keyboard users */
+button:focus-visible, input:focus-visible {
+outline: 2px solid var(–ember);
+outline-offset: 3px;
+border-radius: 4px;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="crest">
+    <div class="crest-mark" aria-hidden="true"></div>
+    <div class="crest-name">Ledger</div>
+  </div>
+  <div class="date" id="dateLabel">—</div>
+  <h1 id="greeting">For <span class="italic">tomorrow</span>.</h1>
+  <nav class="tabs" role="tablist">
+    <button id="todayBtn" role="tab">Today</button>
+    <button id="tomorrowBtn" role="tab" class="active">Tomorrow</button>
+    <button id="journalBtn" role="tab">Diary</button>
+  </nav>
+</header>
+
+<main id="main" aria-live="polite"></main>
+
+<footer>
+  <div class="ornament" aria-hidden="true">· · ·</div>
+  <div id="stat" class="stat"></div>
+  <div class="hint">Tap to finish · Long-press to remove</div>
+</footer>
+
+<script>
+/* ============================================================
+   LEDGER — Stage 1 logic
+   Plain JavaScript. All data lives in your phone's local storage.
+   Nothing ever leaves your device.
+   ============================================================ */
+
+// ---------- storage ----------
+const STORAGE_KEY = 'ledger.v2';
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch (e) { console.warn('Save failed', e); }
+}
+
+// ---------- date helpers ----------
+function ymd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function todayKey() { return ymd(new Date()); }
+function tomorrowKey() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return ymd(d);
+}
+function prettyDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.toLocaleDateString(undefined, {
+    weekday: 'long', month: 'long', day: 'numeric'
+  });
+}
+function shortDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+// ---------- state ----------
+let mode = 'tomorrow';   // 'today' | 'tomorrow' | 'journal'
+const data = loadData();
+
+function tasksFor(key) {
+  if (!data[key]) data[key] = [];
+  return data[key];
+}
+
+// ---------- DOM refs ----------
+const main = document.getElementById('main');
+const greeting = document.getElementById('greeting');
+const dateLabel = document.getElementById('dateLabel');
+const stat = document.getElementById('stat');
+
+function setActiveTab(id) {
+  ['todayBtn', 'tomorrowBtn', 'journalBtn'].forEach(b => {
+    document.getElementById(b).classList.toggle('active', b === id);
+  });
+}
+
+// ---------- render ----------
+function render() {
+  main.innerHTML = '';
+  if (mode === 'today') renderDay(todayKey(), 'today');
+  else if (mode === 'tomorrow') renderDay(tomorrowKey(), 'tomorrow');
+  else renderJournal();
+  renderStat();
+}
+
+function renderDay(key, which) {
+  dateLabel.textContent = prettyDate(key);
+  greeting.innerHTML = which === 'today'
+    ? 'For <span class="italic">today</span>.'
+    : 'For <span class="italic">tomorrow</span>.';
+
+  const tasks = tasksFor(key);
+
+  if (tasks.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = which === 'today'
+      ? '<span class="ornament">· · ·</span>A quiet day.<br>Add one small thing, or look to tomorrow.'
+      : '<span class="ornament">· · ·</span>What are the one to three things<br>that would make tomorrow feel well-spent?';
+    main.appendChild(empty);
+  } else {
+    const ul = document.createElement('ul');
+    ul.className = 'task-list';
+    tasks.forEach((task, i) => ul.appendChild(buildTaskRow(task, i, tasks)));
+    main.appendChild(ul);
+  }
+
+  main.appendChild(buildAddRow(tasks));
+}
+
+function buildTaskRow(task, index, tasksArr) {
+  const li = document.createElement('li');
+  li.className = 'task' + (task.done ? ' done' : '');
+
+  const check = document.createElement('div');
+  check.className = 'check';
+  check.setAttribute('aria-hidden', 'true');
+
+  const text = document.createElement('div');
+  text.className = 'task-text';
+  text.textContent = task.text;
+
+  const del = document.createElement('button');
+  del.className = 'task-delete';
+  del.setAttribute('aria-label', 'Delete task');
+  del.textContent = '×';
+
+  li.append(check, text, del);
+
+  li.addEventListener('click', (e) => {
+    if (e.target === del) return;
+    task.done = !task.done;
+    if (task.done) task.doneAt = Date.now();
+    else delete task.doneAt;
+    saveData(data);
+    render();
+  });
+
+  del.addEventListener('click', (e) => {
+    e.stopPropagation();
+    tasksArr.splice(index, 1);
+    saveData(data);
+    render();
+  });
+
+  // long-press on touch devices to reveal delete
+  let pressTimer;
+  li.addEventListener('touchstart', () => {
+    pressTimer = setTimeout(() => li.classList.add('show-delete'), 450);
+  }, { passive: true });
+  li.addEventListener('touchend',   () => clearTimeout(pressTimer));
+  li.addEventListener('touchmove',  () => clearTimeout(pressTimer));
+
+  return li;
+}
+
+function buildAddRow(tasksArr) {
+  const row = document.createElement('div');
+  row.className = 'add-row';
+  row.innerHTML = `
+    <div class="add-plus" aria-hidden="true">+</div>
+    <input class="add-input" type="text" maxlength="160"
+           placeholder="Write it down..."
+           autocomplete="off" autocorrect="on" spellcheck="true">
+  `;
+  const input = row.querySelector('.add-input');
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const value = input.value.trim();
+    if (!value) return;
+    tasksArr.push({ text: value, done: false, createdAt: Date.now() });
+    saveData(data);
+    input.value = '';
+    render();
+    // re-focus for rapid entry of multiple tasks
+    setTimeout(() => {
+      const again = document.querySelector('.add-input');
+      if (again) again.focus();
+    }, 20);
+  });
+  return row;
+}
+
+function renderJournal() {
+  dateLabel.textContent = 'Looking back';
+  greeting.innerHTML = 'Your <span class="italic">ledger</span>.';
+
+  const today = todayKey();
+  const keys = Object.keys(data)
+    .filter(k => k < today && data[k].length > 0)
+    .sort()
+    .reverse()
+    .slice(0, 60);
+
+  if (keys.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<span class="ornament">· · ·</span>Nothing to look back on yet.<br>Finish a day, and it will rest here.';
+    main.appendChild(empty);
+    return;
+  }
+
+  const journal = document.createElement('div');
+  journal.className = 'journal';
+
+  keys.forEach(k => {
+    const tasks = data[k];
+    const done = tasks.filter(t => t.done).length;
+    const total = tasks.length;
+
+    const group = document.createElement('div');
+    group.className = 'day-group';
+
+    const header = document.createElement('div');
+    header.className = 'day-header';
+    header.innerHTML = `
+      <div class="day-title">${shortDate(k)}</div>
+      <div class="day-meta">${done} of ${total}</div>
+    `;
+    group.appendChild(header);
+
+    tasks.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'journal-item ' + (t.done ? 'done-item' : 'undone-item');
+
+      const marker = document.createElement('div');
+      marker.className = 'marker';
+
+      const itemText = document.createElement('div');
+      itemText.className = 'item-text';
+      itemText.textContent = t.text;
+
+      item.append(marker, itemText);
+      group.appendChild(item);
+    });
+
+    journal.appendChild(group);
+  });
+
+  main.appendChild(journal);
+}
+
+function renderStat() {
+  const today = todayKey();
+  let total = 0, done = 0, days = 0;
+  Object.keys(data).forEach(k => {
+    if (k > today) return;
+    if (data[k].length > 0) days++;
+    data[k].forEach(t => { total++; if (t.done) done++; });
+  });
+  if (total === 0) {
+    stat.innerHTML = 'A clean page. <strong>Begin tonight.</strong>';
+    return;
+  }
+  const pct = Math.round(done * 100 / total);
+  stat.innerHTML = `<strong>${done}</strong> of <strong>${total}</strong> kept, across <strong>${days}</strong> ${days === 1 ? 'day' : 'days'} · <strong>${pct}%</strong>`;
+}
+
+// ---------- tab wiring ----------
+document.getElementById('todayBtn').onclick    = () => { mode = 'today';    setActiveTab('todayBtn');    render(); };
+document.getElementById('tomorrowBtn').onclick = () => { mode = 'tomorrow'; setActiveTab('tomorrowBtn'); render(); };
+document.getElementById('journalBtn').onclick  = () => { mode = 'journal';  setActiveTab('journalBtn');  render(); };
+
+// ---------- smart default tab ----------
+// Before 5am: still "yesterday-tonight", show tomorrow (which is really "today")
+// 5am–5pm: show today's tasks
+// 5pm onward: it's planning time, show tomorrow
+(function smartDefault() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 17) {
+    mode = 'today';
+    setActiveTab('todayBtn');
+  } else {
+    mode = 'tomorrow';
+    setActiveTab('tomorrowBtn');
+  }
+})();
+
+render();
+</script>
+
+</body>
+</html>
